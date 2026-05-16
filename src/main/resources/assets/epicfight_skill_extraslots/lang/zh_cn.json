@@ -23,10 +23,16 @@
   "epicfight.skill_slot.identity7": "身份 7",
   "epicfight.skill_slot.identity8": "身份 8",
   "epicfight.skill_slot.identity9": "身份 9",
+  "item.epicfight_skill_extraslots.passive_skillslot_soul_stone": "被动技能槽灵魂石",
+  "item.epicfight_skill_extraslots.mover_skillslot_soul_stone": "行动技能槽灵魂石",
+  "item.epicfight_skill_extraslots.identity_skillslot_soul_stone": "身份技能槽灵魂石",
   "gui.epicfight_skill_extraslots.title": "Epic Fight 额外技能槽位",
   "gui.epicfight_skill_extraslots.passive_slots": "被动技能槽",
   "gui.epicfight_skill_extraslots.mover_slots": "行动技能槽",
   "gui.epicfight_skill_extraslots.identity_slots": "身份技能槽",
+  "gui.epicfight_skill_extraslots.max_passive_slots": "最大被动技能槽",
+  "gui.epicfight_skill_extraslots.max_mover_slots": "最大行动技能槽",
+  "gui.epicfight_skill_extraslots.max_identity_slots": "最大身份技能槽",
   "gui.epicfight_skill_extraslots.reset_defaults": "恢复默认",
-  "gui.epicfight_skill_extraslots.requires_reopen": "通用配置。槽位数量变更需要完全重启游戏后生效。"
+  "gui.epicfight_skill_extraslots.requires_reopen": "通用配置。增加槽位会立即生效；减少槽位需要完整重启游戏。"
 }

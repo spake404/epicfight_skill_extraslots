@@ -14,6 +14,7 @@ public class EpicFightSkillExtraSlots {
 	
 	public EpicFightSkillExtraSlots(FMLJavaModLoadingContext context) {
 		context.registerConfig(ModConfig.Type.COMMON, ExtraSlotsConfig.SPEC);
+		ExtraSlotsNetwork.register();
 		SkillSlot.ENUM_MANAGER.registerEnumCls(MODID, ExtraSkillSlots.class);
 		
 		if (FMLEnvironment.dist == Dist.CLIENT) {

@@ -24,12 +24,18 @@ public final class ExtraSlotsConfig {
 	public static final int DEFAULT_PASSIVE_SLOTS = 3;
 	public static final int DEFAULT_MOVER_SLOTS = 1;
 	public static final int DEFAULT_IDENTITY_SLOTS = 1;
-	public static final int MAX_PASSIVE_SLOTS = 11;
-	public static final int MAX_MOVER_SLOTS = 9;
-	public static final int MAX_IDENTITY_SLOTS = 9;
+	public static final int DEFAULT_MAX_PASSIVE_SLOTS = 11;
+	public static final int DEFAULT_MAX_MOVER_SLOTS = 9;
+	public static final int DEFAULT_MAX_IDENTITY_SLOTS = 9;
+	public static final int HARD_MAX_PASSIVE_SLOTS = 64;
+	public static final int HARD_MAX_MOVER_SLOTS = 64;
+	public static final int HARD_MAX_IDENTITY_SLOTS = 64;
 	
 	private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
 	
+	public static final ForgeConfigSpec.IntValue MAX_PASSIVE_SLOTS;
+	public static final ForgeConfigSpec.IntValue MAX_MOVER_SLOTS;
+	public static final ForgeConfigSpec.IntValue MAX_IDENTITY_SLOTS;
 	public static final ForgeConfigSpec.IntValue PASSIVE_SLOTS;
 	public static final ForgeConfigSpec.IntValue MOVER_SLOTS;
 	public static final ForgeConfigSpec.IntValue IDENTITY_SLOTS;
@@ -37,12 +43,18 @@ public final class ExtraSlotsConfig {
 	
 	static {
 		BUILDER.push("skill_slots");
+		MAX_PASSIVE_SLOTS = BUILDER.comment("Maximum configurable passive skill slots, including Epic Fight's built-in passive slots.")
+			.defineInRange("max_passive_slots", DEFAULT_MAX_PASSIVE_SLOTS, MIN_PASSIVE_SLOTS, HARD_MAX_PASSIVE_SLOTS);
+		MAX_MOVER_SLOTS = BUILDER.comment("Maximum configurable mover skill slots, including Epic Fight's built-in mover slot.")
+			.defineInRange("max_mover_slots", DEFAULT_MAX_MOVER_SLOTS, MIN_MOVER_SLOTS, HARD_MAX_MOVER_SLOTS);
+		MAX_IDENTITY_SLOTS = BUILDER.comment("Maximum configurable identity skill slots, including Epic Fight's built-in identity slot.")
+			.defineInRange("max_identity_slots", DEFAULT_MAX_IDENTITY_SLOTS, MIN_IDENTITY_SLOTS, HARD_MAX_IDENTITY_SLOTS);
 		PASSIVE_SLOTS = BUILDER.comment("Total passive skill slots after the next game restart, including Epic Fight's built-in passive slots.")
-			.defineInRange("passive_slots", DEFAULT_PASSIVE_SLOTS, MIN_PASSIVE_SLOTS, MAX_PASSIVE_SLOTS);
-		MOVER_SLOTS = BUILDER.comment("Total mobility/action skill slots after the next game restart, including Epic Fight's built-in mobility slot.")
-			.defineInRange("mover_slots", DEFAULT_MOVER_SLOTS, MIN_MOVER_SLOTS, MAX_MOVER_SLOTS);
+			.defineInRange("passive_slots", DEFAULT_PASSIVE_SLOTS, MIN_PASSIVE_SLOTS, HARD_MAX_PASSIVE_SLOTS);
+		MOVER_SLOTS = BUILDER.comment("Total mover skill slots after the next game restart, including Epic Fight's built-in mover slot.")
+			.defineInRange("mover_slots", DEFAULT_MOVER_SLOTS, MIN_MOVER_SLOTS, HARD_MAX_MOVER_SLOTS);
 		IDENTITY_SLOTS = BUILDER.comment("Total identity skill slots after the next game restart, including Epic Fight's built-in identity slot.")
-			.defineInRange("identity_slots", DEFAULT_IDENTITY_SLOTS, MIN_IDENTITY_SLOTS, MAX_IDENTITY_SLOTS);
+			.defineInRange("identity_slots", DEFAULT_IDENTITY_SLOTS, MIN_IDENTITY_SLOTS, HARD_MAX_IDENTITY_SLOTS);
 		BUILDER.pop();
 		
 		SPEC = BUILDER.build();
@@ -64,27 +76,54 @@ public final class ExtraSlotsConfig {
 	}
 	
 	public static int passiveSlots() {
-		return PASSIVE_SLOTS.get();
+		return clamp(PASSIVE_SLOTS.get(), MIN_PASSIVE_SLOTS, maxPassiveSlots());
 	}
 	
 	public static int moverSlots() {
-		return MOVER_SLOTS.get();
+		return clamp(MOVER_SLOTS.get(), MIN_MOVER_SLOTS, maxMoverSlots());
 	}
 	
 	public static int identitySlots() {
-		return IDENTITY_SLOTS.get();
+		return clamp(IDENTITY_SLOTS.get(), MIN_IDENTITY_SLOTS, maxIdentitySlots());
+	}
+	
+	public static int maxPassiveSlots() {
+		return MAX_PASSIVE_SLOTS.get();
+	}
+	
+	public static int maxMoverSlots() {
+		return MAX_MOVER_SLOTS.get();
+	}
+	
+	public static int maxIdentitySlots() {
+		return MAX_IDENTITY_SLOTS.get();
 	}
 	
 	public static int startupPassiveSlots() {
-		return readStartupSlotCount("passive_slots", DEFAULT_PASSIVE_SLOTS, MIN_PASSIVE_SLOTS, MAX_PASSIVE_SLOTS);
+		int max = startupMaxPassiveSlots();
+		return readStartupSlotCount("passive_slots", DEFAULT_PASSIVE_SLOTS, MIN_PASSIVE_SLOTS, max);
 	}
 	
 	public static int startupMoverSlots() {
-		return readStartupSlotCount("mover_slots", DEFAULT_MOVER_SLOTS, MIN_MOVER_SLOTS, MAX_MOVER_SLOTS);
+		int max = startupMaxMoverSlots();
+		return readStartupSlotCount("mover_slots", DEFAULT_MOVER_SLOTS, MIN_MOVER_SLOTS, max);
 	}
 	
 	public static int startupIdentitySlots() {
-		return readStartupSlotCount("identity_slots", DEFAULT_IDENTITY_SLOTS, MIN_IDENTITY_SLOTS, MAX_IDENTITY_SLOTS);
+		int max = startupMaxIdentitySlots();
+		return readStartupSlotCount("identity_slots", DEFAULT_IDENTITY_SLOTS, MIN_IDENTITY_SLOTS, max);
+	}
+	
+	public static int startupMaxPassiveSlots() {
+		return readStartupSlotCount("max_passive_slots", DEFAULT_MAX_PASSIVE_SLOTS, MIN_PASSIVE_SLOTS, HARD_MAX_PASSIVE_SLOTS);
+	}
+	
+	public static int startupMaxMoverSlots() {
+		return readStartupSlotCount("max_mover_slots", DEFAULT_MAX_MOVER_SLOTS, MIN_MOVER_SLOTS, HARD_MAX_MOVER_SLOTS);
+	}
+	
+	public static int startupMaxIdentitySlots() {
+		return readStartupSlotCount("max_identity_slots", DEFAULT_MAX_IDENTITY_SLOTS, MIN_IDENTITY_SLOTS, HARD_MAX_IDENTITY_SLOTS);
 	}
 	
 	private static int readStartupSlotCount(String key, int fallback, int min, int max) {

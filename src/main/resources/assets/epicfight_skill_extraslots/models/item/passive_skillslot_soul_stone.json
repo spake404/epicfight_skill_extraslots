@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "epicfight_skill_extraslots:item/passive_skillslot_soul_stone"
+  }
+}

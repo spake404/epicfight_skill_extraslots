@@ -13,6 +13,9 @@ public class ExtraSlotsConfigScreen extends Screen {
 	private int passiveSlots;
 	private int moverSlots;
 	private int identitySlots;
+	private int maxPassiveSlots;
+	private int maxMoverSlots;
+	private int maxIdentitySlots;
 	
 	public ExtraSlotsConfigScreen(Minecraft minecraft, Screen parent) {
 		super(Component.translatable(ExtraSlotsConfig.key("title")));
@@ -21,21 +24,39 @@ public class ExtraSlotsConfigScreen extends Screen {
 		this.passiveSlots = ExtraSlotsConfig.PASSIVE_SLOTS.get();
 		this.moverSlots = ExtraSlotsConfig.MOVER_SLOTS.get();
 		this.identitySlots = ExtraSlotsConfig.IDENTITY_SLOTS.get();
+		this.maxPassiveSlots = ExtraSlotsConfig.MAX_PASSIVE_SLOTS.get();
+		this.maxMoverSlots = ExtraSlotsConfig.MAX_MOVER_SLOTS.get();
+		this.maxIdentitySlots = ExtraSlotsConfig.MAX_IDENTITY_SLOTS.get();
 	}
 	
 	@Override
 	protected void init() {
 		int centerX = this.width / 2;
-		int startY = this.height / 2 - 62;
+		int startY = this.height / 2 - 96;
 		
-		this.addSlotControls(centerX, startY, () -> this.passiveSlots, value -> this.passiveSlots = value, ExtraSlotsConfig.MIN_PASSIVE_SLOTS, ExtraSlotsConfig.MAX_PASSIVE_SLOTS);
-		this.addSlotControls(centerX, startY + 32, () -> this.moverSlots, value -> this.moverSlots = value, ExtraSlotsConfig.MIN_MOVER_SLOTS, ExtraSlotsConfig.MAX_MOVER_SLOTS);
-		this.addSlotControls(centerX, startY + 64, () -> this.identitySlots, value -> this.identitySlots = value, ExtraSlotsConfig.MIN_IDENTITY_SLOTS, ExtraSlotsConfig.MAX_IDENTITY_SLOTS);
+		this.addSlotControls(centerX, startY, () -> this.passiveSlots, value -> this.passiveSlots = value, ExtraSlotsConfig.MIN_PASSIVE_SLOTS, this.maxPassiveSlots);
+		this.addSlotControls(centerX, startY + 24, () -> this.moverSlots, value -> this.moverSlots = value, ExtraSlotsConfig.MIN_MOVER_SLOTS, this.maxMoverSlots);
+		this.addSlotControls(centerX, startY + 48, () -> this.identitySlots, value -> this.identitySlots = value, ExtraSlotsConfig.MIN_IDENTITY_SLOTS, this.maxIdentitySlots);
+		this.addSlotControls(centerX, startY + 80, () -> this.maxPassiveSlots, value -> {
+			this.maxPassiveSlots = value;
+			this.passiveSlots = Math.min(this.passiveSlots, this.maxPassiveSlots);
+		}, ExtraSlotsConfig.MIN_PASSIVE_SLOTS, ExtraSlotsConfig.HARD_MAX_PASSIVE_SLOTS);
+		this.addSlotControls(centerX, startY + 104, () -> this.maxMoverSlots, value -> {
+			this.maxMoverSlots = value;
+			this.moverSlots = Math.min(this.moverSlots, this.maxMoverSlots);
+		}, ExtraSlotsConfig.MIN_MOVER_SLOTS, ExtraSlotsConfig.HARD_MAX_MOVER_SLOTS);
+		this.addSlotControls(centerX, startY + 128, () -> this.maxIdentitySlots, value -> {
+			this.maxIdentitySlots = value;
+			this.identitySlots = Math.min(this.identitySlots, this.maxIdentitySlots);
+		}, ExtraSlotsConfig.MIN_IDENTITY_SLOTS, ExtraSlotsConfig.HARD_MAX_IDENTITY_SLOTS);
 		
 		this.addRenderableWidget(Button.builder(Component.translatable(ExtraSlotsConfig.key("reset_defaults")), button -> {
 			this.passiveSlots = ExtraSlotsConfig.DEFAULT_PASSIVE_SLOTS;
 			this.moverSlots = ExtraSlotsConfig.DEFAULT_MOVER_SLOTS;
 			this.identitySlots = ExtraSlotsConfig.DEFAULT_IDENTITY_SLOTS;
+			this.maxPassiveSlots = ExtraSlotsConfig.DEFAULT_MAX_PASSIVE_SLOTS;
+			this.maxMoverSlots = ExtraSlotsConfig.DEFAULT_MAX_MOVER_SLOTS;
+			this.maxIdentitySlots = ExtraSlotsConfig.DEFAULT_MAX_IDENTITY_SLOTS;
 			this.rebuildWidgets();
 		}).bounds(centerX - 154, this.height - 64, 148, 20).build());
 		
@@ -43,10 +64,17 @@ public class ExtraSlotsConfigScreen extends Screen {
 			.bounds(centerX + 6, this.height - 64, 148, 20).build());
 		
 		this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, button -> {
+			this.save(ExtraSlotsConfig.MAX_PASSIVE_SLOTS, this.maxPassiveSlots);
+			this.save(ExtraSlotsConfig.MAX_MOVER_SLOTS, this.maxMoverSlots);
+			this.save(ExtraSlotsConfig.MAX_IDENTITY_SLOTS, this.maxIdentitySlots);
 			this.save(ExtraSlotsConfig.PASSIVE_SLOTS, this.passiveSlots);
 			this.save(ExtraSlotsConfig.MOVER_SLOTS, this.moverSlots);
 			this.save(ExtraSlotsConfig.IDENTITY_SLOTS, this.identitySlots);
 			ExtraSlotsConfig.SPEC.save();
+			
+			ExtraSkillSlots.applyConfiguredSlots();
+			ExtraSlotsClientRuntime.expandKnownPlayers();
+			
 			this.returnToParent();
 		}).bounds(centerX - 100, this.height - 36, 200, 20).build());
 	}
@@ -73,11 +101,14 @@ public class ExtraSlotsConfigScreen extends Screen {
 		guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 18, 16777215);
 		
 		int centerX = this.width / 2;
-		int startY = this.height / 2 - 58;
+		int startY = this.height / 2 - 92;
 		this.drawSlotLine(guiGraphics, ExtraSlotsConfig.key("passive_slots"), this.passiveSlots, startY);
-		this.drawSlotLine(guiGraphics, ExtraSlotsConfig.key("mover_slots"), this.moverSlots, startY + 32);
-		this.drawSlotLine(guiGraphics, ExtraSlotsConfig.key("identity_slots"), this.identitySlots, startY + 64);
-		guiGraphics.drawCenteredString(this.font, Component.translatable(ExtraSlotsConfig.key("requires_reopen")), centerX, startY + 96, 10526880);
+		this.drawSlotLine(guiGraphics, ExtraSlotsConfig.key("mover_slots"), this.moverSlots, startY + 24);
+		this.drawSlotLine(guiGraphics, ExtraSlotsConfig.key("identity_slots"), this.identitySlots, startY + 48);
+		this.drawSlotLine(guiGraphics, ExtraSlotsConfig.key("max_passive_slots"), this.maxPassiveSlots, startY + 80);
+		this.drawSlotLine(guiGraphics, ExtraSlotsConfig.key("max_mover_slots"), this.maxMoverSlots, startY + 104);
+		this.drawSlotLine(guiGraphics, ExtraSlotsConfig.key("max_identity_slots"), this.maxIdentitySlots, startY + 128);
+		guiGraphics.drawCenteredString(this.font, Component.translatable(ExtraSlotsConfig.key("requires_reopen")), centerX, startY + 158, 10526880);
 		
 		super.render(guiGraphics, mouseX, mouseY, partialTicks);
 	}
