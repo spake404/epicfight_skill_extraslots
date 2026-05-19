@@ -1,19 +1,20 @@
 # Epic Fight Skill Extra Slots
 
-Epic Fight Skill Extra Slots is a Minecraft Forge addon for Epic Fight that adds configurable extra skill slots for Passive, Mover, and Identity skills.
+Epic Fight Skill Extra Slots is a Minecraft Forge addon for Epic Fight that adds extra Passive, Mover, and Identity skill slots.
 
-It is designed for modpacks and servers that want more flexible character progression while keeping slot counts configurable and controllable in-game.
+Version 2.0 adds optional Epic Fight: Skill Tree integration. When Skill Tree is installed, extra slots are unlocked through a dedicated Extra Slots skill tree and Soul Stone items instead of being controlled only by the current slot count config.
 
 ## Features
 
 - Adds extra Epic Fight skill slots for Passive, Mover, and Identity skills.
-- Supports configurable current slot counts.
-- Supports configurable maximum slot limits.
-- Allows slot counts to be increased during gameplay.
-- When slots are reduced, overflow slots are hidden immediately and fully removed after restarting the game.
-- Synchronizes slot changes from server to client.
-- Hides disabled slots from both the skill screen and the skill book installation screen.
-- Provides commands for server operators or creative-mode players.
+- Supports configurable maximum extra slot limits.
+- Adds an optional `extraslot` Skill Tree page when Epic Fight: Skill Tree is installed.
+- Generates Extra Passive, Extra Mover, and Extra Identity slot unlock nodes from the configured maximum slot limits.
+- Uses stored Soul Stones to unlock extra slots in Skill Tree.
+- Keeps learned extra slot unlock skills as hidden marker skills so they do not occupy normal Epic Fight skill slots.
+- Closing an unlocked extra slot through Skill Tree unequip disables the slot and does not refund the consumed Soul Stone.
+- Hides disabled extra slots from Epic Fight skill screens, skill book slot selection, and Better Skill Menu when present.
+- Provides commands for operators or creative-mode players to adjust slot counts.
 - Provides a Java API for other mods to modify slot counts through code.
 
 ## Requirements
@@ -22,6 +23,54 @@ It is designed for modpacks and servers that want more flexible character progre
 - Minecraft Forge 47+
 - Epic Fight 20.0.0+
 - Java 17
+
+## Optional Compatibility
+
+### Epic Fight: Skill Tree
+
+Epic Fight: Skill Tree is optional.
+
+When it is installed:
+
+- The mod adds a new Skill Tree page named `Extra Slots`.
+- Extra slot counts are unlocked through Skill Tree nodes.
+- The current Passive, Mover, and Identity slot count controls are hidden from the config screen.
+- Maximum extra slot limits still come from this mod's config.
+- Soul Stones are used as the unlock resource for the corresponding slot type.
+
+When it is not installed:
+
+- Extra slot counts are controlled by this mod's config and commands.
+
+### Better Skill Menu
+
+Better Skill Menu is optional.
+
+When it is installed, this mod hides disabled extra slots and extra slot unlock marker skills from Better Skill Menu. It also includes compatibility handling for newer Epic Fight versions where Better Skill Menu may reference the removed `RANGED` weapon category field.
+
+## Soul Stones
+
+Version 2.0 adds three Soul Stone items:
+
+- Passive Skillslot Soul Stone
+- Mover Skillslot Soul Stone
+- Identity Skillslot Soul Stone
+
+Right-clicking a Soul Stone stores it in the player's persistent data. Stored Soul Stones are displayed in the Skill Tree UI and are consumed when unlocking the matching extra slot type.
+
+Soul Stone counts behave like a stored progression resource, not like direct inventory checks. Once a Soul Stone is stored, it can be used by the Extra Slots Skill Tree even if the item is no longer in the inventory.
+
+## Crafting
+
+Soul Stone recipes are defined as datapack recipes under:
+
+```text
+data/epicfight_skill_extraslots/recipes/
+```
+
+This makes them easy to override or modify in a modpack.
+
+The included recipes require Epic Fight: Skill Tree because they use `epicskills:ability_stone`.
 
 ## Commands
 
@@ -45,22 +94,30 @@ Examples:
 /extraslots remove PlayerName Identity 1
 ```
 
-If a slot type is already at its minimum or maximum value, the command will report that no further change can be applied.
+If a slot type is already at its minimum or maximum value, the command reports that no further change can be applied.
 
 ## Configuration
 
 The mod adds common configuration options for:
 
-- Passive slot count
-- Mover slot count
-- Identity slot count
-- Maximum Passive slot limit
-- Maximum Mover slot limit
-- Maximum Identity slot limit
+- Extra Passive slot count
+- Extra Mover slot count
+- Extra Identity slot count
+- Maximum extra Passive slot limit
+- Maximum extra Mover slot limit
+- Maximum extra Identity slot limit
+
+When Epic Fight: Skill Tree is installed, the current extra slot count options are controlled by the Extra Slots Skill Tree instead of the config screen. The maximum extra slot limit options remain configurable.
+
+Maximum extra slot limits apply after re-entering the world.
+
+## Slot Behavior
 
 Increasing slots can apply during gameplay.
 
-Decreasing slots hides the disabled slots immediately, but a full restart is recommended to completely remove them from the registered slot list.
+Decreasing slots hides disabled slots and clears skills installed in disabled slots. The registered slot list is fully refreshed after re-entering the world.
+
+When an extra slot is unlocked through Skill Tree, its unlock skill is moved into a hidden marker slot. This keeps the unlock state available for progression checks without occupying the player's normal Epic Fight skill slots.
 
 ## Developer API
 
@@ -82,16 +139,6 @@ ExtraSlotsApi.SlotGroup.PASSIVE
 ExtraSlotsApi.SlotGroup.MOVER
 ExtraSlotsApi.SlotGroup.IDENTITY
 ```
-
-## Planned Items
-
-Three Soul Stone item placeholders exist internally for future use:
-
-- Passive Skillslot Soul Stone
-- Mover Skillslot Soul Stone
-- Identity Skillslot Soul Stone
-
-They are currently not registered in-game until final textures and behavior are ready.
 
 ## License
 
