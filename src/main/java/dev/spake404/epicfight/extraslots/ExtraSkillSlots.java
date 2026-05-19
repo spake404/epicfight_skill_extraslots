@@ -24,7 +24,7 @@ public final class ExtraSkillSlots implements SkillSlot {
 	
 	public static ExtraSkillSlots[] values() {
 		if (values == null) {
-			ensureSlots(ExtraSlotsConfig.startupPassiveSlots(), ExtraSlotsConfig.startupMoverSlots(), ExtraSlotsConfig.startupIdentitySlots());
+			ensureSlots(startupRegisteredPassiveSlots(), startupRegisteredMoverSlots(), startupRegisteredIdentitySlots());
 		}
 		
 		return values.clone();
@@ -32,7 +32,7 @@ public final class ExtraSkillSlots implements SkillSlot {
 	
 	public static int applyConfiguredSlots() {
 		int previousCount = REGISTERED.size();
-		ensureSlots(ExtraSlotsConfig.passiveSlots(), ExtraSlotsConfig.moverSlots(), ExtraSlotsConfig.identitySlots());
+		ensureSlots(registeredPassiveSlots(), registeredMoverSlots(), registeredIdentitySlots());
 		return REGISTERED.size() - previousCount;
 	}
 	
@@ -41,6 +41,10 @@ public final class ExtraSkillSlots implements SkillSlot {
 	}
 	
 	public static boolean isEnabled(SkillSlot slot) {
+		return isEnabled(slot, ExtraSlotCounts.configured());
+	}
+	
+	public static boolean isEnabled(SkillSlot slot, ExtraSlotCounts counts) {
 		if (!(slot instanceof ExtraSkillSlots extraSlot)) {
 			return true;
 		}
@@ -48,14 +52,38 @@ public final class ExtraSkillSlots implements SkillSlot {
 		String slotName = extraSlot.name.toUpperCase(Locale.ROOT);
 		
 		if (slotName.startsWith("PASSIVE")) {
-			return slotIndex(slotName, "PASSIVE") <= ExtraSlotsConfig.passiveSlots();
+			return slotIndex(slotName, "PASSIVE") <= counts.passiveSlots();
 		} else if (slotName.startsWith("MOVER")) {
-			return slotIndex(slotName, "MOVER") <= ExtraSlotsConfig.moverSlots();
+			return slotIndex(slotName, "MOVER") <= counts.moverSlots();
 		} else if (slotName.startsWith("IDENTITY")) {
-			return slotIndex(slotName, "IDENTITY") <= ExtraSlotsConfig.identitySlots();
+			return slotIndex(slotName, "IDENTITY") <= counts.identitySlots();
 		}
 		
 		return true;
+	}
+	
+	private static int startupRegisteredPassiveSlots() {
+		return ExtraSlotsSkillTreeCompat.isLoaded() ? ExtraSlotsConfig.BASE_PASSIVE_SLOTS + ExtraSlotsConfig.HARD_MAX_PASSIVE_SLOTS : ExtraSlotsConfig.startupPassiveSlots();
+	}
+	
+	private static int startupRegisteredMoverSlots() {
+		return ExtraSlotsSkillTreeCompat.isLoaded() ? ExtraSlotsConfig.BASE_MOVER_SLOTS + ExtraSlotsConfig.HARD_MAX_MOVER_SLOTS : ExtraSlotsConfig.startupMoverSlots();
+	}
+	
+	private static int startupRegisteredIdentitySlots() {
+		return ExtraSlotsSkillTreeCompat.isLoaded() ? ExtraSlotsConfig.BASE_IDENTITY_SLOTS + ExtraSlotsConfig.HARD_MAX_IDENTITY_SLOTS : ExtraSlotsConfig.startupIdentitySlots();
+	}
+	
+	private static int registeredPassiveSlots() {
+		return ExtraSlotsSkillTreeCompat.isLoaded() ? ExtraSlotsConfig.BASE_PASSIVE_SLOTS + ExtraSlotsConfig.HARD_MAX_PASSIVE_SLOTS : ExtraSlotsConfig.passiveSlots();
+	}
+	
+	private static int registeredMoverSlots() {
+		return ExtraSlotsSkillTreeCompat.isLoaded() ? ExtraSlotsConfig.BASE_MOVER_SLOTS + ExtraSlotsConfig.HARD_MAX_MOVER_SLOTS : ExtraSlotsConfig.moverSlots();
+	}
+	
+	private static int registeredIdentitySlots() {
+		return ExtraSlotsSkillTreeCompat.isLoaded() ? ExtraSlotsConfig.BASE_IDENTITY_SLOTS + ExtraSlotsConfig.HARD_MAX_IDENTITY_SLOTS : ExtraSlotsConfig.identitySlots();
 	}
 	
 	private static synchronized void ensureSlots(int passiveSlots, int moverSlots, int identitySlots) {

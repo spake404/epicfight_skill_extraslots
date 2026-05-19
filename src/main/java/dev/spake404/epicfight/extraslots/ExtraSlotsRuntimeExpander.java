@@ -5,6 +5,8 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 
+import net.minecraft.server.level.ServerPlayer;
+import yesman.epicfight.network.EpicFightNetworkManager;
 import yesman.epicfight.skill.SkillContainer;
 import yesman.epicfight.skill.SkillSlot;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
@@ -36,15 +38,54 @@ public final class ExtraSlotsRuntimeExpander {
 	}
 	
 	public static void clearDisabledSlots(CapabilitySkill skills) {
+		clearDisabledSlots(skills, ExtraSlotCounts.configured());
+	}
+	
+	public static void clearDisabledSlots(CapabilitySkill skills, ExtraSlotCounts counts) {
 		if (skills == null) {
 			return;
 		}
 		
 		skills.listSkillContainers()
-			.filter(container -> container != null && ExtraSkillSlots.isManagedSlot(container.getSlot()) && !ExtraSkillSlots.isEnabled(container.getSlot()))
+			.filter(container -> container != null && ExtraSkillSlots.isManagedSlot(container.getSlot()) && !ExtraSkillSlots.isEnabled(container.getSlot(), counts))
 			.forEach(container -> {
 				if (!container.isEmpty()) {
 					container.setSkill(null);
+				}
+			});
+	}
+	
+	public static void clearUnlockMarkerSkills(CapabilitySkill skills) {
+		if (skills == null) {
+			return;
+		}
+		
+		skills.listSkillContainers()
+			.filter(container -> container != null && container.getSkill() instanceof ExtraSlotUnlockSkill && !ExtraSlotUnlockSlots.isUnlockSlot(container.getSlot()))
+			.forEach(container -> container.setSkill(null));
+	}
+	
+	public static void moveUnlockMarkerSkillsToHiddenSlots(CapabilitySkill skills) {
+		moveUnlockMarkerSkillsToHiddenSlots(skills, null);
+	}
+	
+	public static void moveUnlockMarkerSkillsToHiddenSlots(CapabilitySkill skills, ServerPlayer player) {
+		if (skills == null) {
+			return;
+		}
+		
+		skills.listSkillContainers()
+			.filter(container -> container != null && container.getSkill() instanceof ExtraSlotUnlockSkill && !ExtraSlotUnlockSlots.isUnlockSlot(container.getSlot()))
+			.forEach(container -> {
+				ExtraSlotUnlockSkill skill = (ExtraSlotUnlockSkill)container.getSkill();
+				SkillContainer target = skills.getSkillContainerFor(ExtraSlotUnlockSlots.get(skill.group(), skill.slotIndex()));
+				
+				container.setSkill(null);
+				syncSkillContainer(container, player);
+				
+				if (target != null && target.getSkill() != skill) {
+					target.setSkill(skill);
+					syncSkillContainer(target, player);
 				}
 			});
 	}
@@ -117,5 +158,14 @@ public final class ExtraSlotsRuntimeExpander {
 		}
 		
 		return true;
+	}
+	
+	private static void syncSkillContainer(SkillContainer container, ServerPlayer player) {
+		if (player == null) {
+			return;
+		}
+		
+		EpicFightNetworkManager.sendToPlayer(container.createSyncPacketToLocalPlayer(), player);
+		EpicFightNetworkManager.sendToAllPlayerTrackingThisEntity(container.createSyncPacketToRemotePlayer(), player);
 	}
 }

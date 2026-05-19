@@ -1,0 +1,15 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "dev.spake404.epicfight.extraslots.mixin",
+  "plugin": "dev.spake404.epicfight.extraslots.mixin.ExtraSlotsMixinPlugin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "BetterSkillMenuRangedCompatMixin",
+    "BetterSkillMenuSkillUiMixin",
+    "ExtraSlotsServerBoundUnlockSkillRequestMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

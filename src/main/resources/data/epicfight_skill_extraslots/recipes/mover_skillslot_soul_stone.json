@@ -1,0 +1,34 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "conditions": [
+    {
+      "type": "forge:mod_loaded",
+      "modid": "epicskills"
+    }
+  ],
+  "pattern": [
+    "AMA",
+    "NSN",
+    "ABA"
+  ],
+  "key": {
+    "A": {
+      "item": "epicskills:ability_stone"
+    },
+    "M": {
+      "item": "minecraft:netherite_ingot"
+    },
+    "N": {
+      "item": "minecraft:ender_pearl"
+    },
+    "S": {
+      "item": "minecraft:diamond_boots"
+    },
+    "B": {
+      "item": "epicfight:skillbook"
+    }
+  },
+  "result": {
+    "item": "epicfight_skill_extraslots:mover_skillslot_soul_stone"
+  }
+}

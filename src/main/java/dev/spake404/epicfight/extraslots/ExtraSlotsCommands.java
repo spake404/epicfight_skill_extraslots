@@ -72,7 +72,7 @@ public final class ExtraSlotsCommands {
 		
 		if (result.unchanged()) {
 			if (add) {
-				source.sendFailure(Component.literal(group.displayName() + "最大槽位为 " + group.max() + "，已添加到最大"));
+				source.sendFailure(Component.literal(group.displayName() + "最大值为 " + group.max() + "，已添加到最大"));
 			} else {
 				source.sendFailure(Component.literal(group.displayName() + "已经减少到最小值"));
 			}
@@ -81,7 +81,7 @@ public final class ExtraSlotsCommands {
 		}
 		
 		String verb = add ? "增加" : "减少";
-		source.sendSuccess(() -> Component.literal(group.displayName() + " 槽位已" + verb + " " + Math.abs(result.changedBy()) + "，当前总数 " + result.current() + "。已应用到 " + result.appliedPlayers() + " 个玩家。"), true);
+		source.sendSuccess(() -> Component.literal(group.displayName() + "已" + verb + " " + Math.abs(result.changedBy()) + "，当前额外数量 " + result.current() + "。已应用到 " + result.appliedPlayers() + " 个玩家。"), true);
 		return Math.abs(result.changedBy());
 	}
 	
@@ -143,7 +143,7 @@ public final class ExtraSlotsCommands {
 		}
 		
 		int finalAppliedPlayers = appliedPlayers;
-		source.sendSuccess(() -> Component.literal("Extra skill slots and max slot limits have been set to maximum. Applied to " + finalAppliedPlayers + " players."), true);
+		source.sendSuccess(() -> Component.literal("额外技能槽数量和最大值已提升到最大。已应用到 " + finalAppliedPlayers + " 个玩家。"), true);
 		return appliedPlayers;
 	}
 }

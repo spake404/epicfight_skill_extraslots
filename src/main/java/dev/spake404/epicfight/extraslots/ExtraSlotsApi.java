@@ -58,9 +58,9 @@ public final class ExtraSlotsApi {
 	}
 	
 	public enum SlotGroup {
-		PASSIVE("Passive", SkillCategories.PASSIVE, ExtraSlotsConfig.PASSIVE_SLOTS, ExtraSlotsConfig.MIN_PASSIVE_SLOTS, ExtraSlotsConfig::maxPassiveSlots),
-		MOVER("Mover", SkillCategories.MOVER, ExtraSlotsConfig.MOVER_SLOTS, ExtraSlotsConfig.MIN_MOVER_SLOTS, ExtraSlotsConfig::maxMoverSlots),
-		IDENTITY("Identity", SkillCategories.IDENTITY, ExtraSlotsConfig.IDENTITY_SLOTS, ExtraSlotsConfig.MIN_IDENTITY_SLOTS, ExtraSlotsConfig::maxIdentitySlots);
+		PASSIVE("额外被动技能槽", SkillCategories.PASSIVE, ExtraSlotsConfig.PASSIVE_SLOTS, ExtraSlotsConfig.MIN_PASSIVE_SLOTS, ExtraSlotsConfig::maxExtraPassiveSlots),
+		MOVER("额外行动技能槽", SkillCategories.MOVER, ExtraSlotsConfig.MOVER_SLOTS, ExtraSlotsConfig.MIN_MOVER_SLOTS, ExtraSlotsConfig::maxExtraMoverSlots),
+		IDENTITY("额外身份技能槽", SkillCategories.IDENTITY, ExtraSlotsConfig.IDENTITY_SLOTS, ExtraSlotsConfig.MIN_IDENTITY_SLOTS, ExtraSlotsConfig::maxExtraIdentitySlots);
 		
 		private final String displayName;
 		private final SkillCategory skillCategory;
