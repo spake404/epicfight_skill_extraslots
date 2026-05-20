@@ -70,7 +70,9 @@ final class ExtraSlotsSkillTreeHooks {
 		return count;
 	}
 	
-	static void verifySoulStoneCosts(ServerPlayer player, Set<String> confirmedUnlocks, boolean firstScan) {
+	static VerificationResult verifySoulStoneCosts(ServerPlayer player, Set<String> confirmedUnlocks, boolean firstScan) {
+		VerificationResult result = new VerificationResult();
+		
 		player.getCapability(SkillTreeProgression.SKILL_TREE_PROGRESSION).ifPresent(progression -> {
 			Holder.Reference<SkillTree> tree;
 			CapabilitySkill skills = EpicFightCapabilities.getPlayerPatch(player) == null ? null : EpicFightCapabilities.getPlayerPatch(player).getSkillCapability();
@@ -106,7 +108,7 @@ final class ExtraSlotsSkillTreeHooks {
 					if (!group.isEquipped(skills, skill)) {
 						confirmedUnlocks.remove(key);
 						progression.lockNode(EXTRA_SLOT_TREE, skill, true, player);
-						ExtraSlotsNetwork.sync(player);
+						result.slotsChanged = true;
 						continue;
 					}
 					
@@ -121,16 +123,32 @@ final class ExtraSlotsSkillTreeHooks {
 					
 					if (ExtraSlotsSkillTreeCompat.consumeSoulStone(player, group)) {
 						confirmedUnlocks.add(key);
-						ExtraSlotsNetwork.sync(player);
+						result.slotsChanged = true;
+						result.soulStonesChanged = true;
 					} else {
 						progression.lockNode(EXTRA_SLOT_TREE, skill, true, player);
-						ExtraSlotsNetwork.sync(player);
-						ExtraSlotsNetwork.syncSoulStones(player);
+						result.slotsChanged = true;
+						result.soulStonesChanged = true;
 						player.sendSystemMessage(Component.translatable("message." + EpicFightSkillExtraSlots.MODID + ".missing_soul_stone", group.soulStone().get().getDescription()));
 					}
 				}
 			}
 		});
+		
+		return result;
+	}
+	
+	static final class VerificationResult {
+		private boolean slotsChanged;
+		private boolean soulStonesChanged;
+		
+		boolean slotsChanged() {
+			return this.slotsChanged;
+		}
+		
+		boolean soulStonesChanged() {
+			return this.soulStonesChanged;
+		}
 	}
 	
 }

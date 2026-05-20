@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.1.0
+
+### English
+
+- Optimized Epic Fight: Skill Tree compatibility to avoid full skill tree scans on every player tick.
+- Added dirty-state tracking so unlock and Soul Stone changes are handled immediately without constant polling.
+- Reduced fallback verification to once every 100 ticks per player.
+- Avoided idle-tick Soul Stone NBT reads after the client has received its initial Soul Stone sync.
+- Batched slot and Soul Stone synchronization so a single verification pass does not send repeated packets.
+- Cleared per-player cached sync state on logout.
+
 ## 1.1.0
 
 ### 中文

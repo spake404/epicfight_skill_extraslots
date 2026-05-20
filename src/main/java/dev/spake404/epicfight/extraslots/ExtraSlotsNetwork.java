@@ -32,11 +32,16 @@ public final class ExtraSlotsNetwork {
 	
 	public static void sync(ServerPlayer player) {
 		ExtraSlotCounts counts = ExtraSlotsSkillTreeCompat.activeCounts(player);
+		sync(player, counts);
+	}
+	
+	static void sync(ServerPlayer player, ExtraSlotCounts counts) {
 		CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new SyncSlotsPacket(counts.passiveSlots(), counts.moverSlots(), counts.identitySlots()));
 	}
 	
 	public static void syncSoulStones(ServerPlayer player) {
 		ExtraSlotCounts counts = ExtraSlotsSkillTreeCompat.storedSoulStones(player);
+		ExtraSlotsSkillTreeCompat.rememberSyncedSoulStones(player, counts);
 		CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientBoundSetSoulStonesPacket(counts.passiveSlots(), counts.moverSlots(), counts.identitySlots()));
 	}
 	

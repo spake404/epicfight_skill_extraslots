@@ -41,6 +41,7 @@ import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 public final class ExtraSlotsSkillTreeCompat {
 	static final String EPICSKILLS_MODID = "epicskills";
 	static final String TREE_NAME = "extraslot";
+	private static final int FULL_VERIFY_INTERVAL_TICKS = 100;
 	private static final String PACK_ID = EpicFightSkillExtraSlots.MODID + "_generated_skilltree";
 	private static final int TREE_PRIORITY = 200;
 	private static final int NODE_START_X = 20;
@@ -49,7 +50,9 @@ public final class ExtraSlotsSkillTreeCompat {
 	private static final Map<UUID, ExtraSlotCounts> LAST_SYNCED = new LinkedHashMap<>();
 	private static final Map<UUID, ExtraSlotCounts> LAST_SYNCED_SOUL_STONES = new LinkedHashMap<>();
 	private static final Map<UUID, Integer> SOUL_STONE_SYNC_TICKS = new LinkedHashMap<>();
+	private static final Map<UUID, Integer> VERIFY_TICKS = new LinkedHashMap<>();
 	private static final Map<UUID, Set<String>> CONFIRMED_UNLOCKS = new LinkedHashMap<>();
+	private static final Set<UUID> DIRTY_PLAYERS = new HashSet<>();
 	private static final Set<UUID> COSTS_INITIALIZED = new HashSet<>();
 	
 	private ExtraSlotsSkillTreeCompat() {
@@ -81,11 +84,18 @@ public final class ExtraSlotsSkillTreeCompat {
 		);
 	}
 	
+	static void rememberSyncedSoulStones(ServerPlayer player, ExtraSlotCounts counts) {
+		UUID uuid = player.getUUID();
+		LAST_SYNCED_SOUL_STONES.put(uuid, counts);
+		SOUL_STONE_SYNC_TICKS.remove(uuid);
+	}
+	
 	public static int addSoulStone(ServerPlayer player, SlotGroup group, int amount) {
 		CompoundTag tag = soulStoneTag(player);
 		int count = Math.max(0, tag.getInt(group.storageKey()) + amount);
 		tag.putInt(group.storageKey(), count);
 		markSoulStonesDirty(player);
+		markDirty(player);
 		ExtraSlotsNetwork.syncSoulStones(player);
 		return count;
 	}
@@ -100,6 +110,7 @@ public final class ExtraSlotsSkillTreeCompat {
 		
 		tag.putInt(group.storageKey(), count - 1);
 		markSoulStonesDirty(player);
+		markDirty(player);
 		return true;
 	}
 	
@@ -252,31 +263,73 @@ public final class ExtraSlotsSkillTreeCompat {
 				return;
 			}
 			
-			ExtraSlotsSkillTreeHooks.verifySoulStoneCosts(player, confirmedUnlocks(player), COSTS_INITIALIZED.add(player.getUUID()));
 			syncSoulStonesIfNeeded(player);
-			ExtraSlotCounts counts = activeCounts(player);
+			
+			if (!shouldVerify(player)) {
+				return;
+			}
+			
 			PlayerPatch<?> playerPatch = EpicFightCapabilities.getPlayerPatch(player);
+			ExtraSlotsSkillTreeHooks.VerificationResult result = ExtraSlotsSkillTreeHooks.verifySoulStoneCosts(player, confirmedUnlocks(player), COSTS_INITIALIZED.add(player.getUUID()));
 			
 			if (playerPatch != null) {
 				ExtraSlotsRuntimeExpander.moveUnlockMarkerSkillsToHiddenSlots(playerPatch.getSkillCapability(), player);
 			}
 			
-			if (!counts.equals(LAST_SYNCED.get(player.getUUID()))) {
-				LAST_SYNCED.put(player.getUUID(), counts);
-				ExtraSkillSlots.applyConfiguredSlots();
-				ExtraSlotsRuntimeExpander.expand(playerPatch);
-				
-				if (playerPatch != null) {
-					ExtraSlotsRuntimeExpander.clearDisabledSlots(playerPatch.getSkillCapability(), counts);
-				}
-				
-				ExtraSlotsNetwork.sync(player);
+			ExtraSlotCounts counts = activeCounts(player);
+			applyCountsIfNeeded(player, playerPatch, counts, result.slotsChanged());
+			
+			if (result.soulStonesChanged()) {
+				syncSoulStonesIfNeeded(player);
+			}
+		}
+		
+		@SubscribeEvent
+		public static void onPlayerLoggedOut(net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent event) {
+			if (event.getEntity() instanceof ServerPlayer player) {
+				clearPlayerState(player.getUUID());
 			}
 		}
 	}
 	
+	private static boolean shouldVerify(ServerPlayer player) {
+		UUID uuid = player.getUUID();
+		
+		if (DIRTY_PLAYERS.remove(uuid)) {
+			VERIFY_TICKS.put(uuid, FULL_VERIFY_INTERVAL_TICKS);
+			return true;
+		}
+		
+		int ticks = VERIFY_TICKS.getOrDefault(uuid, 0);
+		if (ticks <= 0) {
+			VERIFY_TICKS.put(uuid, FULL_VERIFY_INTERVAL_TICKS);
+			return true;
+		}
+		
+		VERIFY_TICKS.put(uuid, ticks - 1);
+		return false;
+	}
+	
+	private static void applyCountsIfNeeded(ServerPlayer player, PlayerPatch<?> playerPatch, ExtraSlotCounts counts, boolean forceSync) {
+		if (forceSync || !counts.equals(LAST_SYNCED.get(player.getUUID()))) {
+			LAST_SYNCED.put(player.getUUID(), counts);
+			
+			if (playerPatch != null) {
+				ExtraSkillSlots.applyConfiguredSlots();
+				ExtraSlotsRuntimeExpander.expand(playerPatch);
+				ExtraSlotsRuntimeExpander.clearDisabledSlots(playerPatch.getSkillCapability(), counts);
+			}
+			
+			ExtraSlotsNetwork.sync(player, counts);
+		}
+	}
+	
 	private static void markSoulStonesDirty(ServerPlayer player) {
-		SOUL_STONE_SYNC_TICKS.put(player.getUUID(), 10);
+		SOUL_STONE_SYNC_TICKS.put(player.getUUID(), 1);
+	}
+	
+	static void markDirty(ServerPlayer player) {
+		DIRTY_PLAYERS.add(player.getUUID());
 	}
 	
 	public static boolean isConfirmedUnlock(ServerPlayer player, SlotGroup group, int slotIndex) {
@@ -285,10 +338,12 @@ public final class ExtraSlotsSkillTreeCompat {
 	
 	public static void confirmUnlock(ServerPlayer player, SlotGroup group, int slotIndex) {
 		confirmedUnlocks(player).add(unlockKey(group, slotIndex));
+		markDirty(player);
 	}
 	
 	static void removeConfirmedUnlock(ServerPlayer player, SlotGroup group, int slotIndex) {
 		confirmedUnlocks(player).remove(unlockKey(group, slotIndex));
+		markDirty(player);
 	}
 	
 	static String unlockKey(SlotGroup group, int slotIndex) {
@@ -297,23 +352,31 @@ public final class ExtraSlotsSkillTreeCompat {
 	
 	private static void syncSoulStonesIfNeeded(ServerPlayer player) {
 		UUID uuid = player.getUUID();
-		ExtraSlotCounts counts = storedSoulStones(player);
 		int dirtyTicks = SOUL_STONE_SYNC_TICKS.getOrDefault(uuid, 0);
 		
-		if (!counts.equals(LAST_SYNCED_SOUL_STONES.get(uuid)) || dirtyTicks > 0) {
-			LAST_SYNCED_SOUL_STONES.put(uuid, counts);
+		if (dirtyTicks <= 0 && LAST_SYNCED_SOUL_STONES.containsKey(uuid)) {
+			return;
+		}
+		
+		ExtraSlotCounts counts = storedSoulStones(player);
+		
+		if (dirtyTicks > 0 || !counts.equals(LAST_SYNCED_SOUL_STONES.get(uuid))) {
 			ExtraSlotsNetwork.syncSoulStones(player);
-			
-			if (dirtyTicks > 1) {
-				SOUL_STONE_SYNC_TICKS.put(uuid, dirtyTicks - 1);
-			} else {
-				SOUL_STONE_SYNC_TICKS.remove(uuid);
-			}
 		}
 	}
 	
 	private static Set<String> confirmedUnlocks(ServerPlayer player) {
 		return CONFIRMED_UNLOCKS.computeIfAbsent(player.getUUID(), ignored -> new HashSet<>());
+	}
+	
+	private static void clearPlayerState(UUID uuid) {
+		LAST_SYNCED.remove(uuid);
+		LAST_SYNCED_SOUL_STONES.remove(uuid);
+		SOUL_STONE_SYNC_TICKS.remove(uuid);
+		VERIFY_TICKS.remove(uuid);
+		CONFIRMED_UNLOCKS.remove(uuid);
+		DIRTY_PLAYERS.remove(uuid);
+		COSTS_INITIALIZED.remove(uuid);
 	}
 	
 	private static CompoundTag soulStoneTag(ServerPlayer player) {
