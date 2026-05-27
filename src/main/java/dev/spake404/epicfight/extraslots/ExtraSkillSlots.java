@@ -94,23 +94,17 @@ public final class ExtraSkillSlots implements SkillSlot {
 	}
 	
 	private static void addSlots(String prefix, SkillCategory category, int baseSlots, int totalSlots) {
-		int firstExtraIndex = baseSlots + countRegistered(category) + 1;
-		
-		for (int index = firstExtraIndex; index <= totalSlots; index++) {
-			REGISTERED.add(new ExtraSkillSlots(prefix + index, category));
+		for (int index = baseSlots + 1; index <= totalSlots; index++) {
+			String name = prefix + index;
+			
+			if (!isRegistered(name)) {
+				REGISTERED.add(new ExtraSkillSlots(name, category));
+			}
 		}
 	}
 	
-	private static int countRegistered(SkillCategory category) {
-		int count = 0;
-		
-		for (ExtraSkillSlots slot : REGISTERED) {
-			if (slot.category == category) {
-				count++;
-			}
-		}
-		
-		return count;
+	private static boolean isRegistered(String name) {
+		return SkillSlot.ENUM_MANAGER.get(name) != null;
 	}
 	
 	private static int slotIndex(String slotName, String prefix) {

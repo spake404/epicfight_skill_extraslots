@@ -11,6 +11,10 @@ public class ExtendableEnumManager<T extends ExtendableEnum> {
 		return 0;
 	}
 	
+	public T get(String name) {
+		return null;
+	}
+	
 	public Collection<T> universalValues() {
 		return List.of();
 	}

@@ -1,5 +1,19 @@
 # Changelog
 
+## 2.2.0
+
+### 中文
+
+- 修复与其他 Epic Fight 槽位扩展类 mod 共存时可能崩溃的问题。
+- 额外技能槽注册前现在会检查 Epic Fight 全局 SkillSlot 枚举中是否已经存在同名槽位。
+- 如果 `passive4`、`mover2`、`identity2` 等槽位已被其他 mod 注册，本 mod 会跳过对应名称，避免重复注册导致 `Enum name already exists in skill_slot` 崩溃。
+
+### English
+
+- Fixed a crash that could occur when running alongside other Epic Fight skill slot expansion mods.
+- Extra skill slots now check Epic Fight's global SkillSlot enum before registration.
+- If slots such as `passive4`, `mover2`, or `identity2` are already registered by another mod, this mod skips those names to avoid `Enum name already exists in skill_slot` crashes.
+
 ## 2.1.0
 
 ### English
