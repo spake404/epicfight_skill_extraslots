@@ -41,23 +41,23 @@ abstract class ExtraSlotsServerBoundUnlockSkillRequestMixin {
 		if (!(request.skill() instanceof ExtraSlotUnlockSkill skill)) {
 			return;
 		}
-		
+
 		if (ExtraSlotsSkillTreeCompat.isConfirmedUnlock(player, skill.group(), skill.slotIndex())) {
 			return;
 		}
-		
+
 		if (ExtraSlotsSkillTreeCompat.consumeSoulStone(player, skill.group())) {
 			ExtraSlotsSkillTreeCompat.confirmUnlock(player, skill.group(), skill.slotIndex());
-			ExtraSlotsRuntimeExpander.expand(EpicFightCapabilities.getPlayerPatch(player));
+			ExtraSlotsRuntimeExpander.expand(EpicFightCapabilities.getPlayerPatch(player), ExtraSlotsSkillTreeCompat.activeCounts(player));
 			return;
 		}
-		
+
 		ExtraSlotsNetwork.syncSoulStones(player);
 		player.sendSystemMessage(Component.translatable("message." + EpicFightSkillExtraSlots.MODID + ".missing_soul_stone", skill.group().soulStone().get().getDescription()));
 		abilityPoints.sendChanges();
 		callback.cancel();
 	}
-	
+
 	@Inject(
 		method = "lambda$handle$3(Lcom/yesman/epicskills/world/capability/SkillTreeProgression;Lcom/yesman/epicskills/network/server/ServerBoundUnlockSkillRequest;Lcom/yesman/epicskills/world/capability/AbilityPoints;Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/core/Holder$Reference;)V",
 		at = @At("RETURN")
@@ -73,12 +73,13 @@ abstract class ExtraSlotsServerBoundUnlockSkillRequestMixin {
 		if (!(request.skill() instanceof ExtraSlotUnlockSkill skill) || !ExtraSlotsSkillTreeCompat.isConfirmedUnlock(player, skill.group(), skill.slotIndex())) {
 			return;
 		}
-		
+
 		PlayerPatch<?> playerPatch = EpicFightCapabilities.getPlayerPatch(player);
 		if (playerPatch != null) {
 			ExtraSlotsRuntimeExpander.moveUnlockMarkerSkillsToHiddenSlots(playerPatch.getSkillCapability(), player);
+			ExtraSlotsRuntimeExpander.expandAndClean(playerPatch, ExtraSlotsSkillTreeCompat.activeCounts(player), player);
 		}
-		
+
 		ExtraSlotsNetwork.sync(player);
 		ExtraSlotsNetwork.syncSoulStones(player);
 	}

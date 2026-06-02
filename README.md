@@ -2,7 +2,7 @@
 
 Epic Fight Skill Extra Slots is a Minecraft Forge addon for Epic Fight that adds extra Passive, Mover, and Identity skill slots.
 
-Version 2.2.0 improves compatibility with other Epic Fight skill slot expansion mods by skipping extra slot names that are already registered globally. When Skill Tree is installed, extra slots are unlocked through a dedicated Extra Slots skill tree and Soul Stone items instead of being controlled only by the current slot count config.
+Version 2.3.0 prevents locked extra slots from being selected by Epic Fight's automatic skill installation path. When Skill Tree is installed, extra slots are unlocked through a dedicated Extra Slots skill tree and Soul Stone items instead of being controlled only by the current slot count config.
 
 ## Features
 

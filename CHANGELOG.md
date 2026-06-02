@@ -1,5 +1,23 @@
 # Changelog
 
+## 2.3.0
+
+### 中文
+
+- 修复在 Epic Fight: Skill Tree 中学习普通技能时，技能可能被自动安装到未解锁额外技能槽的问题。
+- 未解锁的 `PASSIVE4..64`、`MOVER2..64`、`IDENTITY2..64` 现在会保留在底层 `skillContainers` 中，但会从 Epic Fight 的可用分类索引中移除，避免被 `getFirstEmptyContainer` 选中。
+- 解锁或关闭额外技能槽后会立即刷新可用槽位索引，并同步清理被禁用槽位中的技能。
+- 改进额外槽位识别逻辑：即使同名槽位由其他 Epic Fight 槽位扩展 mod 注册，也会被正确识别和管理。
+- 保留 Better Skill Menu 开发依赖，并确认本次槽位索引修复与 Better Skill Menu 兼容层可正常构建。
+
+### English
+
+- Fixed an issue where learning normal skills through Epic Fight: Skill Tree could automatically install them into extra slots that were not unlocked yet.
+- Locked `PASSIVE4..64`, `MOVER2..64`, and `IDENTITY2..64` slots now remain in the underlying `skillContainers` array but are removed from Epic Fight's active category index, preventing `getFirstEmptyContainer` from selecting them.
+- Refreshes the active slot index immediately after unlocking or closing extra slots, and synchronizes cleanup for disabled slots.
+- Improved extra slot detection so same-name slots registered by other Epic Fight slot expansion mods can still be recognized and managed correctly.
+- Kept the Better Skill Menu development dependency and verified that this slot-index fix builds with the Better Skill Menu compatibility layer.
+
 ## 2.2.0
 
 ### 中文
