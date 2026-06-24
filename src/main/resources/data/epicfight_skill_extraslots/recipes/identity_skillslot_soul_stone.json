@@ -7,12 +7,12 @@
     }
   ],
   "pattern": [
-    "AMA",
+    "DMD",
     "NSN",
-    "ABA"
+    "DBD"
   ],
   "key": {
-    "A": {
+    "D": {
       "item": "epicskills:ability_stone"
     },
     "M": {
@@ -25,7 +25,7 @@
       "item": "minecraft:diamond_helmet"
     },
     "B": {
-      "item": "epicfight:skillbook"
+      "item": "minecraft:enchanted_book"
     }
   },
   "result": {

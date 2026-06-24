@@ -3,6 +3,7 @@ package dev.spake404.epicfight.extraslots;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -39,6 +40,7 @@ public final class ExtraSlotsConfig {
 	public static final ForgeConfigSpec.IntValue PASSIVE_SLOTS;
 	public static final ForgeConfigSpec.IntValue MOVER_SLOTS;
 	public static final ForgeConfigSpec.IntValue IDENTITY_SLOTS;
+	public static final ForgeConfigSpec.ConfigValue<List<? extends String>> MUTUAL_EXCLUSION_GROUPS;
 	public static final ForgeConfigSpec SPEC;
 	
 	static {
@@ -55,6 +57,14 @@ public final class ExtraSlotsConfig {
 			.defineInRange("extra_mover_slots", DEFAULT_MOVER_SLOTS, MIN_MOVER_SLOTS, HARD_MAX_MOVER_SLOTS);
 		IDENTITY_SLOTS = BUILDER.comment("Extra identity skill slots after the next game restart, not including Epic Fight's built-in identity slot.")
 			.defineInRange("extra_identity_slots", DEFAULT_IDENTITY_SLOTS, MIN_IDENTITY_SLOTS, HARD_MAX_IDENTITY_SLOTS);
+		BUILDER.pop();
+
+		BUILDER.push("mutual_exclusion");
+		MUTUAL_EXCLUSION_GROUPS = BUILDER.comment(
+				"Comma-separated skill ids. Only one skill in each group can be equipped at the same time.",
+				"Example: \"epicfight:roll,epicfight:step\""
+			)
+			.defineList("mutual_exclusion_groups", List.of(), value -> value instanceof String);
 		BUILDER.pop();
 		
 		SPEC = BUILDER.build();

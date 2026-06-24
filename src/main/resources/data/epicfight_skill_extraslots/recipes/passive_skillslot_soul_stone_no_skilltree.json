@@ -2,8 +2,11 @@
   "type": "minecraft:crafting_shaped",
   "conditions": [
     {
-      "type": "forge:mod_loaded",
-      "modid": "epicskills"
+      "type": "forge:not",
+      "value": {
+        "type": "forge:mod_loaded",
+        "modid": "epicskills"
+      }
     }
   ],
   "pattern": [
@@ -13,7 +16,7 @@
   ],
   "key": {
     "D": {
-      "item": "epicskills:ability_stone"
+      "item": "minecraft:diamond"
     },
     "M": {
       "item": "minecraft:netherite_ingot"

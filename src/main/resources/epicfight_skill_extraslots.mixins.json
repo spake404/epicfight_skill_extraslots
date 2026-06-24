@@ -7,7 +7,14 @@
   "mixins": [
     "BetterSkillMenuRangedCompatMixin",
     "BetterSkillMenuSkillUiMixin",
+    "ExtraSlotsCPChangeSkillAccessor",
+    "ExtraSlotsCPChangeSkillMixin",
+    "ExtraSlotsSkillBookScreenMixin",
+    "ExtraSlotsSkillEditScreenMixin",
     "ExtraSlotsServerBoundUnlockSkillRequestMixin"
+  ],
+  "client": [
+    "ExtraSlotsSkillInfoScreenMixin"
   ],
   "injectors": {
     "defaultRequire": 1

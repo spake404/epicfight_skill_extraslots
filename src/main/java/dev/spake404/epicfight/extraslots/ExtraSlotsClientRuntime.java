@@ -169,7 +169,7 @@ public final class ExtraSlotsClientRuntime {
 		}
 		
 		int x = soulStoneStartX(screen);
-		int y = 8;
+		int y = 10;
 		addSoulStoneMeter(screen, event, new SoulStoneMeter(x, y, ExtraSlotsItems.PASSIVE_SKILLSLOT_SOUL_STONE.get(), ExtraSlotsSkillTreeCompat.SlotGroup.PASSIVE));
 		addSoulStoneMeter(screen, event, new SoulStoneMeter(x + 54, y, ExtraSlotsItems.MOVER_SKILLSLOT_SOUL_STONE.get(), ExtraSlotsSkillTreeCompat.SlotGroup.MOVER));
 		addSoulStoneMeter(screen, event, new SoulStoneMeter(x + 108, y, ExtraSlotsItems.IDENTITY_SKILLSLOT_SOUL_STONE.get(), ExtraSlotsSkillTreeCompat.SlotGroup.IDENTITY));

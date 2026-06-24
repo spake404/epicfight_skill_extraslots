@@ -2,8 +2,11 @@
   "type": "minecraft:crafting_shaped",
   "conditions": [
     {
-      "type": "forge:mod_loaded",
-      "modid": "epicskills"
+      "type": "forge:not",
+      "value": {
+        "type": "forge:mod_loaded",
+        "modid": "epicskills"
+      }
     }
   ],
   "pattern": [
@@ -13,22 +16,22 @@
   ],
   "key": {
     "D": {
-      "item": "epicskills:ability_stone"
+      "item": "minecraft:diamond"
     },
     "M": {
       "item": "minecraft:netherite_ingot"
     },
     "N": {
-      "item": "minecraft:nether_star"
+      "item": "minecraft:ender_pearl"
     },
     "S": {
-      "item": "minecraft:diamond_sword"
+      "item": "minecraft:diamond_boots"
     },
     "B": {
       "item": "minecraft:enchanted_book"
     }
   },
   "result": {
-    "item": "epicfight_skill_extraslots:passive_skillslot_soul_stone"
+    "item": "epicfight_skill_extraslots:mover_skillslot_soul_stone"
   }
 }

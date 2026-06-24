@@ -78,25 +78,62 @@ public final class ExtraSlotsItems {
 		@Override
 		public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
 			ItemStack stack = player.getItemInHand(hand);
-			SoundEvent sound = ForgeRegistries.SOUND_EVENTS.getValue(GAIN_ABILITY_POINTS_SOUND);
-			
-			if (sound != null) {
-				player.playSound(sound, 1.0F, 1.0F);
-			}
 			
 			if (level.isClientSide()) {
 				return InteractionResultHolder.success(stack);
 			}
 			
 			if (player instanceof ServerPlayer serverPlayer) {
-				ExtraSlotsSkillTreeCompat.addSoulStone(serverPlayer, this.slotGroup, 1);
+				boolean used = ExtraSlotsSkillTreeCompat.isLoaded() ? storeSoulStone(serverPlayer) : addSlot(serverPlayer);
 				
-				if (!serverPlayer.getAbilities().instabuild) {
-					stack.shrink(1);
+				if (!used) {
+					return InteractionResultHolder.fail(stack);
 				}
+				
+				playUseSound(serverPlayer);
+				consumeOne(serverPlayer, stack);
 			}
 			
 			return InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
+		}
+		
+		private boolean storeSoulStone(ServerPlayer player) {
+			ExtraSlotsSkillTreeCompat.addSoulStone(player, this.slotGroup, 1);
+			return true;
+		}
+		
+		private boolean addSlot(ServerPlayer player) {
+			ExtraSlotsApi.Result result = ExtraSlotsApi.add(List.of(player), apiSlotGroup(), 1);
+			
+			if (result.unchanged()) {
+				player.sendSystemMessage(Component.translatable("gui." + EpicFightSkillExtraSlots.MODID + ".max_" + this.group + "_slots")
+					.append(Component.literal(" is already at maximum.")));
+				return false;
+			}
+			
+			return true;
+		}
+		
+		private ExtraSlotsApi.SlotGroup apiSlotGroup() {
+			return switch (this.slotGroup) {
+				case PASSIVE -> ExtraSlotsApi.SlotGroup.PASSIVE;
+				case MOVER -> ExtraSlotsApi.SlotGroup.MOVER;
+				case IDENTITY -> ExtraSlotsApi.SlotGroup.IDENTITY;
+			};
+		}
+		
+		private static void playUseSound(Player player) {
+			SoundEvent sound = ForgeRegistries.SOUND_EVENTS.getValue(GAIN_ABILITY_POINTS_SOUND);
+			
+			if (sound != null) {
+				player.playSound(sound, 1.0F, 1.0F);
+			}
+		}
+		
+		private static void consumeOne(ServerPlayer player, ItemStack stack) {
+			if (!player.getAbilities().instabuild) {
+				stack.shrink(1);
+			}
 		}
 		
 		@Override

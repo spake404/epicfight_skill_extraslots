@@ -64,6 +64,9 @@ public class ExtraSlotsConfigScreen extends Screen {
 			this.maxIdentitySlots = ExtraSlotsConfig.DEFAULT_MAX_IDENTITY_SLOTS;
 			this.rebuildWidgets();
 		}).bounds(centerX - 154, this.height - 64, 148, 20).build());
+
+		this.addRenderableWidget(Button.builder(Component.translatable(ExtraSlotsConfig.key("mutual_exclusions")), button -> this.minecraft.setScreen(new ExtraSlotsMutualExclusionConfigScreen(this)))
+			.bounds(centerX + 6, this.height - 88, 148, 20).build());
 		
 		this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, button -> this.returnToParent())
 			.bounds(centerX + 6, this.height - 64, 148, 20).build());

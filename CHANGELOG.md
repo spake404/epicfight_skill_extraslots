@@ -1,5 +1,41 @@
 # Changelog
 
+## 3.0.0
+
+### 中文
+
+- 新增可配置的技能互斥组系统。每个互斥组中的技能同一时间只能装备一个。
+- 新增游戏内互斥组编辑界面，可自动列出已注册的 Epic Fight 技能，并支持搜索、创建组、添加和移除技能。
+- 互斥组编辑界面现在会显示技能图标，便于识别技能。
+- 互斥组配置使用 Forge config 保存，方便整合包或服务器管理员直接编辑。
+- 装备互斥技能时会使用 Epic Fight 风格的确认提示：确认后自动卸下冲突技能，再装备新技能。
+- 修复在 Epic Fight: Skill Tree 界面装备或替换技能时，互斥检查不弹提示、直接失败的问题。
+- 修复 Skill Tree 解锁技能后自动装备可能绕过互斥检查的问题。
+- 优化互斥组检测性能，缓存已解析的配置并减少装备检查时的临时对象创建。
+- 魂石合成表中的技能书已改为附魔书。
+- 当未安装 Epic Fight: Skill Tree 时，魂石可直接右键使用并增加对应技能槽位。
+- 当未安装 Epic Fight: Skill Tree 时，会加载不依赖 Skill Tree ability stone 的默认魂石配方。
+- 当安装 Epic Fight: Skill Tree 时，魂石仍会按原设计存入 Skill Tree 路径。
+- 调整 Skill Tree 中魂石数量显示层级，使其与技能石显示层级一致。
+- 修复与 Epic Fight: Better Skill Menu 在未安装 Skill Tree 时可能出现的兼容崩溃。
+
+### English
+
+- Added configurable skill mutual-exclusion groups. Only one skill from each group can be equipped at a time.
+- Added an in-game mutual-exclusion editor that automatically lists registered Epic Fight skills and supports search, group creation, adding skills, and removing skills.
+- The mutual-exclusion editor now displays skill icons for easier identification.
+- Mutual-exclusion groups are saved through Forge config so modpack and server maintainers can edit them directly.
+- Equipping a conflicting skill now uses an Epic Fight-style confirmation prompt; confirming automatically unequips the conflicting skill before equipping the new one.
+- Fixed Epic Fight: Skill Tree equip and replace flows not showing the mutual-exclusion prompt and failing directly.
+- Fixed Skill Tree post-unlock auto-equip potentially bypassing mutual-exclusion checks.
+- Optimized mutual-exclusion checks by caching parsed config data and reducing temporary allocations during equip checks.
+- Soul Stone recipes now use enchanted books instead of skill books.
+- When Epic Fight: Skill Tree is not installed, Soul Stones can be used directly to add the corresponding extra skill slot.
+- When Epic Fight: Skill Tree is not installed, default Soul Stone recipes no longer depend on Skill Tree ability stones.
+- When Epic Fight: Skill Tree is installed, Soul Stones still follow the Skill Tree storage and unlock path.
+- Adjusted the Soul Stone count render layer in Skill Tree so it matches the ability stone count layer.
+- Fixed a compatibility crash that could occur with Epic Fight: Better Skill Menu when Skill Tree was not installed.
+
 ## 2.3.0
 
 ### 中文

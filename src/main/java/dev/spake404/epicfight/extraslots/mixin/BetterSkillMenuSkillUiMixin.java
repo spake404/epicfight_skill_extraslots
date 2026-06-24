@@ -11,7 +11,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import dev.spake404.epicfight.extraslots.ExtraSkillSlots;
 import dev.spake404.epicfight.extraslots.ExtraSlotUnlockSkill;
 import dev.spake404.epicfight.extraslots.ExtraSlotUnlockSlots;
+import org.merlin204.bsm.client.gui.SkillWidget;
 import yesman.epicfight.api.utils.ExtendableEnumManager;
+import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
 import yesman.epicfight.skill.Skill;
 import yesman.epicfight.skill.SkillSlot;
 
@@ -35,7 +37,7 @@ abstract class BetterSkillMenuSkillUiMixin {
 		at = @At("HEAD"),
 		cancellable = true
 	)
-	private static void epicfight_skill_extraslots$hideExtraSlotUnlockSkills(Object widget, int index, Skill skill, Object playerPatch, CallbackInfo callback) {
+	private static void epicfight_skill_extraslots$hideExtraSlotUnlockSkills(SkillWidget widget, int index, Skill skill, LocalPlayerPatch playerPatch, CallbackInfo callback) {
 		if (skill instanceof ExtraSlotUnlockSkill) {
 			callback.cancel();
 		}
