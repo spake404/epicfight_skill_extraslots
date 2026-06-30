@@ -102,8 +102,10 @@ public final class ExtraSlotsMutualExclusions {
 
 	private static Set<ResourceLocation> parseGroup(String rawGroup) {
 		Set<ResourceLocation> group = new HashSet<>();
+		int separator = rawGroup.indexOf('|');
+		String skillList = separator >= 0 ? rawGroup.substring(separator + 1) : rawGroup;
 
-		for (String rawId : rawGroup.split(",")) {
+		for (String rawId : skillList.split(",")) {
 			ResourceLocation id = ResourceLocation.tryParse(rawId.trim());
 			if (id != null) {
 				group.add(id);

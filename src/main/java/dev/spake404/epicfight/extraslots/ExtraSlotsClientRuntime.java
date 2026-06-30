@@ -168,26 +168,39 @@ public final class ExtraSlotsClientRuntime {
 			return;
 		}
 		
-		int x = soulStoneStartX(screen);
+		SoulStoneLayout layout = soulStoneLayout(screen);
 		int y = 10;
-		addSoulStoneMeter(screen, event, new SoulStoneMeter(x, y, ExtraSlotsItems.PASSIVE_SKILLSLOT_SOUL_STONE.get(), ExtraSlotsSkillTreeCompat.SlotGroup.PASSIVE));
-		addSoulStoneMeter(screen, event, new SoulStoneMeter(x + 54, y, ExtraSlotsItems.MOVER_SKILLSLOT_SOUL_STONE.get(), ExtraSlotsSkillTreeCompat.SlotGroup.MOVER));
-		addSoulStoneMeter(screen, event, new SoulStoneMeter(x + 108, y, ExtraSlotsItems.IDENTITY_SKILLSLOT_SOUL_STONE.get(), ExtraSlotsSkillTreeCompat.SlotGroup.IDENTITY));
+		addSoulStoneMeter(screen, event, new SoulStoneMeter(layout.passiveX(), y, ExtraSlotsItems.PASSIVE_SKILLSLOT_SOUL_STONE.get(), ExtraSlotsSkillTreeCompat.SlotGroup.PASSIVE));
+		addSoulStoneMeter(screen, event, new SoulStoneMeter(layout.moverX(), y, ExtraSlotsItems.MOVER_SKILLSLOT_SOUL_STONE.get(), ExtraSlotsSkillTreeCompat.SlotGroup.MOVER));
+		addSoulStoneMeter(screen, event, new SoulStoneMeter(layout.identityX(), y, ExtraSlotsItems.IDENTITY_SKILLSLOT_SOUL_STONE.get(), ExtraSlotsSkillTreeCompat.SlotGroup.IDENTITY));
 	}
 	
-	private static int soulStoneStartX(Screen screen) {
+	private static SoulStoneLayout soulStoneLayout(Screen screen) {
 		int abilityPointsX = abilityPointsMeterX(screen);
-		return Math.max(8, abilityPointsX - 162);
+		int abilityStoneX = abilityStoneMeterX(screen);
+		int naturalSpacing = abilityStoneX - abilityPointsX;
+		if (naturalSpacing < 24 || naturalSpacing > 90) {
+			naturalSpacing = 54;
+		}
+		
+		int leftMargin = 8;
+		int spacing = Math.min(naturalSpacing, Math.max(1, (abilityStoneX - leftMargin) / 4));
+		int passiveX = abilityStoneX - spacing * 4;
+		if (passiveX < leftMargin) {
+			spacing = Math.max(1, (abilityStoneX - leftMargin) / 4);
+			passiveX = abilityStoneX - spacing * 4;
+		}
+		
+		return new SoulStoneLayout(passiveX, abilityStoneX - spacing * 3, abilityStoneX - spacing * 2);
 	}
 	
 	private static int abilityPointsMeterX(Screen screen) {
+		Object expConversionButton = expConversionButton(screen);
+		if (expConversionButton instanceof AbstractWidget widget) {
+			return widget.getX() - 60;
+		}
+		
 		try {
-			if (skillTreeExpConversionButtonField == null) {
-				skillTreeExpConversionButtonField = field(screen.getClass(), "expConversionButton");
-			}
-			
-			Object expConversionButton = skillTreeExpConversionButtonField.get(screen);
-			
 			if (expConversionButton != null) {
 				if (skillTreeButtonGetWidthMethod == null) {
 					skillTreeButtonGetWidthMethod = expConversionButton.getClass().getMethod("getWidth");
@@ -201,10 +214,46 @@ public final class ExtraSlotsClientRuntime {
 		
 		return screen.width - 268;
 	}
+
+	private static int abilityStoneMeterX(Screen screen) {
+		Object expConversionButton = expConversionButton(screen);
+		if (expConversionButton instanceof AbstractWidget widget) {
+			return widget.getX();
+		}
+		
+		try {
+			if (expConversionButton != null) {
+				if (skillTreeButtonGetWidthMethod == null) {
+					skillTreeButtonGetWidthMethod = expConversionButton.getClass().getMethod("getWidth");
+					skillTreeButtonGetWidthMethod.setAccessible(true);
+				}
+				
+				return screen.width - (int)skillTreeButtonGetWidthMethod.invoke(expConversionButton) - 90;
+			}
+		} catch (ReflectiveOperationException | RuntimeException ignored) {
+		}
+		
+		return screen.width - 106;
+	}
+
+	private static Object expConversionButton(Screen screen) {
+		try {
+			if (skillTreeExpConversionButtonField == null) {
+				skillTreeExpConversionButtonField = field(screen.getClass(), "expConversionButton");
+			}
+			
+			return skillTreeExpConversionButtonField.get(screen);
+		} catch (ReflectiveOperationException | RuntimeException ignored) {
+			return null;
+		}
+	}
 	
 	private static void addSoulStoneMeter(Screen screen, ScreenEvent.Init.Post event, SoulStoneMeter meter) {
 		event.addListener(meter);
 		screen.renderables.add(meter);
+	}
+
+	private record SoulStoneLayout(int passiveX, int moverX, int identityX) {
 	}
 	
 	@SuppressWarnings("unchecked")

@@ -1,14 +1,20 @@
 package dev.spake404.epicfight.extraslots;
 
+import java.util.List;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraftforge.common.ForgeConfigSpec.IntValue;
 
 public class ExtraSlotsConfigScreen extends Screen {
+	private static final int ROW_FILL = 0x33000000;
+	private static final int WRAPPED_LINE_HEIGHT = 10;
+
 	private final Screen parent;
 	private int passiveSlots;
 	private int moverSlots;
@@ -32,9 +38,9 @@ public class ExtraSlotsConfigScreen extends Screen {
 	@Override
 	protected void init() {
 		int centerX = this.width / 2;
-		int startY = this.height / 2 - 96;
+		int startY = this.firstSlotY();
 		
-		int maxStartY = ExtraSlotsSkillTreeCompat.isLoaded() ? startY : startY + 80;
+		int maxStartY = ExtraSlotsSkillTreeCompat.isLoaded() ? startY : startY + this.slotGroupGap();
 		
 		if (!ExtraSlotsSkillTreeCompat.isLoaded()) {
 			this.addSlotControls(centerX, startY, () -> this.passiveSlots, value -> this.passiveSlots = value, ExtraSlotsConfig.MIN_PASSIVE_SLOTS, this.maxPassiveSlots);
@@ -66,7 +72,7 @@ public class ExtraSlotsConfigScreen extends Screen {
 		}).bounds(centerX - 154, this.height - 64, 148, 20).build());
 
 		this.addRenderableWidget(Button.builder(Component.translatable(ExtraSlotsConfig.key("mutual_exclusions")), button -> this.minecraft.setScreen(new ExtraSlotsMutualExclusionConfigScreen(this)))
-			.bounds(centerX + 6, this.height - 88, 148, 20).build());
+			.bounds(centerX - 100, this.height - 88, 200, 20).build());
 		
 		this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, button -> this.returnToParent())
 			.bounds(centerX + 6, this.height - 64, 148, 20).build());
@@ -110,14 +116,16 @@ public class ExtraSlotsConfigScreen extends Screen {
 	@Override
 	public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
 		this.renderDirtBackground(guiGraphics);
-		guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 18, 16777215);
 		
 		int centerX = this.width / 2;
-		int startY = this.height / 2 - 92;
-		int maxStartY = ExtraSlotsSkillTreeCompat.isLoaded() ? startY : startY + 80;
+		int titleY = this.titleY();
+		guiGraphics.drawCenteredString(this.font, this.title, centerX, titleY, 16777215);
+
+		int startY = this.firstSlotY();
+		int maxStartY = ExtraSlotsSkillTreeCompat.isLoaded() ? startY : startY + this.slotGroupGap();
 		
 		if (ExtraSlotsSkillTreeCompat.isLoaded()) {
-			guiGraphics.drawCenteredString(this.font, Component.translatable(ExtraSlotsConfig.key("skilltree_controls_slots")), centerX, startY - 22, 10526880);
+			this.drawCenteredWrapped(guiGraphics, Component.translatable(ExtraSlotsConfig.key("skilltree_controls_slots")), centerX, titleY + 22, this.wrappedTextWidth(), 10526880);
 		} else {
 			this.drawSlotLine(guiGraphics, ExtraSlotsConfig.key("passive_slots"), this.passiveSlots, startY);
 			this.drawSlotLine(guiGraphics, ExtraSlotsConfig.key("mover_slots"), this.moverSlots, startY + 24);
@@ -127,16 +135,61 @@ public class ExtraSlotsConfigScreen extends Screen {
 		this.drawSlotLine(guiGraphics, ExtraSlotsConfig.key("max_passive_slots"), this.maxPassiveSlots, maxStartY);
 		this.drawSlotLine(guiGraphics, ExtraSlotsConfig.key("max_mover_slots"), this.maxMoverSlots, maxStartY + 24);
 		this.drawSlotLine(guiGraphics, ExtraSlotsConfig.key("max_identity_slots"), this.maxIdentitySlots, maxStartY + 48);
-		guiGraphics.drawCenteredString(this.font, Component.translatable(ExtraSlotsConfig.key("requires_reopen")), centerX, maxStartY + 78, 10526880);
+		this.drawCenteredWrapped(guiGraphics, Component.translatable(ExtraSlotsConfig.key("requires_reopen")), centerX, maxStartY + 78, this.width - 32, 10526880);
 		
 		super.render(guiGraphics, mouseX, mouseY, partialTicks);
 	}
 	
 	private void drawSlotLine(GuiGraphics guiGraphics, String labelKey, int value, int y) {
-		guiGraphics.drawString(this.font, Component.translatable(labelKey), this.width / 2 - 144, y + 2, 16777215);
-		guiGraphics.drawCenteredString(this.font, Component.literal(String.valueOf(value)), this.width / 2 + 84, y + 2, 16777215);
+		int centerX = this.width / 2;
+		guiGraphics.fill(centerX - 154, y - 3, centerX + 154, y + 21, ROW_FILL);
+		guiGraphics.drawString(this.font, Component.translatable(labelKey), centerX - 144, y + 3, 16777215);
+		guiGraphics.drawCenteredString(this.font, Component.literal(String.valueOf(value)), centerX + 84, y + 3, 16777215);
 	}
-	
+
+	private int titleY() {
+		return 18;
+	}
+
+	private int firstSlotY() {
+		if (ExtraSlotsSkillTreeCompat.isLoaded()) {
+			int noticeLines = this.wrappedLineCount(Component.translatable(ExtraSlotsConfig.key("skilltree_controls_slots")), this.wrappedTextWidth());
+			int minimumTop = this.titleY() + 22 + noticeLines * WRAPPED_LINE_HEIGHT + 12;
+			int centeredTop = this.height / 2 - 54;
+			int maximumTop = this.height - 112;
+			return this.clamp(Math.max(centeredTop, minimumTop), minimumTop, maximumTop);
+		}
+
+		int minimumTop = this.titleY() + 32;
+		int centeredTop = this.height / 2 - 96;
+		int maximumTop = this.height - 180;
+		return this.clamp(Math.max(centeredTop, minimumTop), minimumTop, maximumTop);
+	}
+
+	private int slotGroupGap() {
+		return this.height < 300 ? 68 : 80;
+	}
+
+	private int wrappedTextWidth() {
+		return Math.max(80, this.width - 48);
+	}
+
+	private int wrappedLineCount(Component text, int maxWidth) {
+		return this.font.split(text, Math.max(80, maxWidth)).size();
+	}
+
+	private int clamp(int value, int min, int max) {
+		return Math.max(min, Math.min(value, Math.max(min, max)));
+	}
+
+	private void drawCenteredWrapped(GuiGraphics guiGraphics, Component text, int centerX, int y, int maxWidth, int color) {
+		List<FormattedCharSequence> lines = this.font.split(text, Math.max(80, maxWidth));
+		for (int i = 0; i < lines.size(); i++) {
+			FormattedCharSequence line = lines.get(i);
+			guiGraphics.drawString(this.font, line, centerX - this.font.width(line) / 2, y + i * WRAPPED_LINE_HEIGHT, color);
+		}
+	}
+
 	@Override
 	public void onClose() {
 		this.returnToParent();
